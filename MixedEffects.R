@@ -50,16 +50,18 @@ jacobianData[baselineIndices + 1][ wh ] =
   declineRate * timeBetweenScans + baselineJacobianWithNoise + 
   rnorm( length(timeBetweenScans) ) * epsval
 
+ageAtBaseline = age 
+ageAtBaseline[baselineIndices + 1] = ageAtBaseline[ baselineIndices ]
+timeBetweenScansAllSubjects = age - ageAtBaseline
+
 # data is done now
 mydata = data.frame( ids   = subjectIds,
                      sdx   = dx , 
                      shape = jacobianData, 
-                     age   = age, 
+                     age   = ageAtBaseline, 
                      dummy = rnorm( length( subjectIds))
                      )
-ageAtBaseline = age 
-ageAtBaseline[baselineIndices + 1] = ageAtBaseline[ baselineIndices ]
-timeBetweenScansAllSubjects = age - ageAtBaseline
+
 #xyplot( shape ~ age | sdx ,col.line="black", data = mydata, xlab = 'Diagnosis')
 
 jacobianFrame = data.frame( shape = jacobianData, dx = dx, age = age)
@@ -67,14 +69,16 @@ ggplot(jacobianFrame,
        aes(age, shape, colour = dx) ) + 
          geom_point(size = 7) + labs(title = 'Shape vs. Age', x = 'Age', y = 'Shape')
 
+# construct models
+fixedFxModel1 = lm( shape ~ age + sdx, data = mydata )
+fixedFxModel2 = lm(shape ~ age + sdx + timeBetweenScansAllSubjects:dx, 
+                   data = mydata)
 mixedFxModel1 = lmer( shape ~ age + sdx + ( 1 | ids ), data = mydata )
 mixedFxModel2 = 
   lmer( shape ~ age + sdx + ( 1 | ids ) + timeBetweenScansAllSubjects:dx, 
         data = mydata )
-
-fixedFxModel1 = lm( shape ~ age + sdx, data = mydata )
-fixedFxModel2 = lm(shape ~ age + sdx + timeBetweenScansAllSubjects:dx, 
-                   data = mydata)
+# examine fixed effects model--misleading stats because of inappropriate fit
+summary(fixedFxModel1)
 
 print( paste( "Standard:",
               anova(fixedFxModel1,fixedFxModel2)$Pr[2] ,
