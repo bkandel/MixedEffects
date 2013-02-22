@@ -3,9 +3,8 @@
 library(lme4);library(lattice); library(nlme); library(ggplot2)
 
 icepts = c(2.00,1.5)            # base starting points.  group 2 is 'atrophied'
-slopes = c(-0.2,-0.5)           # simulated slope in group1,2
-                                # leads to a significant age | ids interaction 
-noise = c(0.4,0.4)              # allow different noise levels
+slopes = c(-0.2,-0.3)           # simulated slope in groups.  intentionally subtle difference.
+noise = c(0.1,0.4)              # different noise levels--key for mixed effects models
 epsval = mean(abs(slopes))*0.2  # epsilon error to add to lines
 numberOfTimepoints = 2
 meanTimeBetweenScans = 0.5
@@ -61,10 +60,12 @@ mydata = data.frame( ids   = subjectIds,
 ageAtBaseline = age 
 ageAtBaseline[baselineIndices + 1] = ageAtBaseline[ baselineIndices ]
 timeBetweenScansAllSubjects = age - ageAtBaseline
-#print( t.test(mydata$shape[ dx==1 ], mydata$shape[dx==2] ) )
-n1<-numberOfSubjects / 2 ; n2<-n1+1
-xyplot( shape ~ age | sdx ,col.line="black", data = mydata, xlab = 'Diagnosis')
+#xyplot( shape ~ age | sdx ,col.line="black", data = mydata, xlab = 'Diagnosis')
 
+jacobianFrame = data.frame( shape = jacobianData, dx = dx, age = age)
+ggplot(jacobianFrame, 
+       aes(age, shape, colour = dx, size = 10) ) + 
+         geom_point() + labs(title = 'Shape vs. Age', x = 'Age', y = 'Shape')
 
 mixedFxModel1 = lmer( shape ~ age + sdx + ( 1 | ids ), data = mydata )
 mixedFxModel2 = 
@@ -79,3 +80,40 @@ print( paste( "Standard:",
               anova(fixedFxModel1,fixedFxModel2)$Pr[2] ,
               " Mixed",
               anova(mixedFxModel1, mixedFxModel2)$Pr[2]  ))
+
+#########################################################################
+############################  Plotting  #################################
+#########################################################################
+plot.data = data.frame(dx = mydata$sdx, 
+                       fixedResid1 = residuals(fixedFxModel1),
+                       fixedResid2 = residuals(fixedFxModel2), 
+                       mixedResid1 = residuals(mixedFxModel1), 
+                       mixedResid2 = residuals(mixedFxModel2))
+
+ggplot(plot.data, 
+       aes(dx, fixedResid1, colour = dx, size = 3), 
+       aes_string(shape = as.character(dx))) + 
+         geom_point(position = "jitter", width = 0.05) + 
+         labs(title = 'Residuals of Fixed Effects: shape ~ age + sdx', 
+              x = 'Diagnosis', y = 'Residuals')
+ggplot(plot.data, 
+       aes(dx, fixedResid2, colour = dx, size = 3), 
+       aes_string(shape = as.character(dx))) + 
+         geom_point(position = "jitter", width = 0.05) + 
+         labs(title = paste('Residuals of Fixed Effects: shape ~ age', 
+                            ' + sdx + timeBetweenScans:dx'), 
+              x = 'Diagnosis', y = 'Residuals')
+ggplot(plot.data, 
+       aes(dx, mixedResid1, colour = dx, size = 3), 
+       aes_string(shape = as.character(dx))) + 
+         geom_point(position = "jitter", width = 0.05) + 
+         labs(title = paste('Residuals of Mixed Effects Model:', 
+                            'shape ~ age + sdx + ( 1 | ids )'), 
+              x = 'Diagnosis', y = 'Residuals')
+ggplot(plot.data, 
+       aes(dx, mixedResid2, colour = dx, size = 3), 
+       aes_string(shape = as.character(dx))) + 
+         geom_point(position = "jitter", width = 0.05) + 
+         labs(title = paste('Residuals of Fixed Effects Model:', 
+                            'shape ~ age + sdx + ( 1 | ids ) + timeBetweenScans:dx'), 
+                            x = 'Diagnosis', y = 'Residuals')
