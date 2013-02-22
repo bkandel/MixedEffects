@@ -64,8 +64,8 @@ timeBetweenScansAllSubjects = age - ageAtBaseline
 
 jacobianFrame = data.frame( shape = jacobianData, dx = dx, age = age)
 ggplot(jacobianFrame, 
-       aes(age, shape, colour = dx, size = 10) ) + 
-         geom_point() + labs(title = 'Shape vs. Age', x = 'Age', y = 'Shape')
+       aes(age, shape, colour = dx) ) + 
+         geom_point(size = 7) + labs(title = 'Shape vs. Age', x = 'Age', y = 'Shape')
 
 mixedFxModel1 = lmer( shape ~ age + sdx + ( 1 | ids ), data = mydata )
 mixedFxModel2 = 
@@ -91,29 +91,29 @@ plot.data = data.frame(dx = mydata$sdx,
                        mixedResid2 = residuals(mixedFxModel2))
 
 ggplot(plot.data, 
-       aes(dx, fixedResid1, colour = dx, size = 3), 
+       aes(dx, fixedResid1, colour = dx), 
        aes_string(shape = as.character(dx))) + 
-         geom_point(position = "jitter", width = 0.05) + 
+         geom_point(position = "jitter", width = 0.05, size = 8) + 
          labs(title = 'Residuals of Fixed Effects: shape ~ age + sdx', 
               x = 'Diagnosis', y = 'Residuals')
 ggplot(plot.data, 
        aes(dx, fixedResid2, colour = dx, size = 3), 
        aes_string(shape = as.character(dx))) + 
-         geom_point(position = "jitter", width = 0.05) + 
+         geom_point(position = "jitter", width = 0.05, size = 8) + 
          labs(title = paste('Residuals of Fixed Effects: shape ~ age', 
                             ' + sdx + timeBetweenScans:dx'), 
               x = 'Diagnosis', y = 'Residuals')
 ggplot(plot.data, 
-       aes(dx, mixedResid1, colour = dx, size = 3), 
+       aes(dx, mixedResid1, colour = dx), 
        aes_string(shape = as.character(dx))) + 
-         geom_point(position = "jitter", width = 0.05) + 
+         geom_point(position = "jitter", width = 0.05, size = 8) + 
          labs(title = paste('Residuals of Mixed Effects Model:', 
                             'shape ~ age + sdx + ( 1 | ids )'), 
               x = 'Diagnosis', y = 'Residuals')
 ggplot(plot.data, 
-       aes(dx, mixedResid2, colour = dx, size = 3), 
+       aes(dx, mixedResid2, colour = dx), 
        aes_string(shape = as.character(dx))) + 
-         geom_point(position = "jitter", width = 0.05) + 
+         geom_point(position = "jitter", width = 0.05, size = 8) + 
          labs(title = paste('Residuals of Fixed Effects Model:', 
                             'shape ~ age + sdx + ( 1 | ids ) + timeBetweenScans:dx'), 
                             x = 'Diagnosis', y = 'Residuals')
