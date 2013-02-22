@@ -78,7 +78,8 @@ mixedFxModel2 =
   lmer( shape ~ age + sdx + ( 1 | ids ) + timeBetweenScansAllSubjects:dx, 
         data = mydata )
 # examine fixed effects model--misleading stats because of inappropriate fit
-summary(fixedFxModel1)
+print(summary(fixedFxModel2))
+print(summary(mixedFxModel2))
 
 print( paste( "Standard:",
               anova(fixedFxModel1,fixedFxModel2)$Pr[2] ,
@@ -118,6 +119,6 @@ ggplot(plot.data,
        aes(dx, mixedResid2, colour = dx), 
        aes_string(shape = as.character(dx))) + 
          geom_point(position = "jitter", width = 0.05, size = 8) + 
-         labs(title = paste('Residuals of Fixed Effects Model:', 
+         labs(title = paste('Residuals of Mixed Effects Model:', 
                             'shape ~ age + sdx + ( 1 | ids ) + timeBetweenScans:dx'), 
                             x = 'Diagnosis', y = 'Residuals')
